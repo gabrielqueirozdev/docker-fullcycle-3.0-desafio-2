@@ -1,0 +1,51 @@
+services:
+  nginx: 
+    build: 
+      context: ./nginx
+    container_name: nginx
+    restart: always
+    networks:
+      - desafio
+    depends_on:
+      - node
+    ports:
+      - "8080:80"
+
+  node:
+    build:
+      context: ./node
+    container_name: node
+    restart: always
+    networks:
+      - desafio
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./node:/usr/src/app
+      - /usr/src/app/node_modules
+
+  db:
+    image: mysql:5.7
+    container_name: db
+    restart: always
+    networks:
+      - desafio
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+      - ./mysql/initial-script.sql:/docker-entrypoint-initdb.d/init.sql
+    tty: true
+    command: --innodb-use-native-aio=0
+    environment:
+      - MYSQL_DATABASE=desafio_docker_2
+      - MYSQL_ROOT_PASSWORD=root
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "--password=root"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+networks:
+  desafio:
+    driver: bridge
