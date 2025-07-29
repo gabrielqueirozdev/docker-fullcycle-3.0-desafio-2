@@ -1,5 +1,6 @@
 const express = require('express')
 const mysql = require('mysql')
+const { faker } = require('@faker-js/faker');
 
 const app = express()
 
@@ -16,7 +17,7 @@ const config = {
 const connection = mysql.createConnection(config)
 
 app.get('/', (_, res) => {
-  const name = "Gabriel"
+  const name = faker.person.fullName()
   
   connection.query(`INSERT INTO people (name) VALUES ('${name}')`)
 
